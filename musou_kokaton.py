@@ -250,7 +250,15 @@ class Score:
 
 
 class Shield(pg.sprite.Sprite):
+    """
+    防御壁に関するクラス
+    """
     def __init__(self, bird: Bird, life: int):
+        """
+        引数:
+            bird (Bird): 防御壁を生成するこうかとん
+            life (int): 防御壁の寿命
+        """
         super().__init__()
         self.vx, self.vy = bird.get_direction()
 

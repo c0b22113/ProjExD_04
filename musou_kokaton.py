@@ -2,6 +2,7 @@ import math
 import random
 import sys
 import time
+from typing import Any
 import pygame as pg
 
 
@@ -289,6 +290,14 @@ class NeoGravity(pg.sprite.Sprite):
         pg.draw.rect(self.image, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
         self.rect = self.image.get_rect()
 
+    def update(self):
+        """
+        発動してからlifeがゼロになるまで発動し、ゼロになったらkillされる
+        """
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+
 
 class Gravity(pg.sprite.Sprite):
     """
@@ -387,7 +396,7 @@ def main():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     beams.add(Beam(bird, angle=0))
-                if event.key == pg.K_RETURN and score.score >= 200:
+                if event.key == pg.K_RETURN and score.score >= 0:
                     score.score -= 200
                     neos.add(NeoGravity(400))
                 if event.key == pg.K_TAB and score.score >= 50:

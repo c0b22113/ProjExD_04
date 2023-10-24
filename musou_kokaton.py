@@ -70,7 +70,8 @@ class Bird(pg.sprite.Sprite):
         self.image = self.imgs[self.dire]
         self.rect = self.image.get_rect()
         self.rect.center = xy
-        self.speed = 10
+        self.speed = 10  # デフォルトの移動速度
+        self.boost_speed = 20  # 高速化時の移動速度
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -88,9 +89,14 @@ class Bird(pg.sprite.Sprite):
         引数2 screen：画面Surface
         """
         sum_mv = [0, 0]
+        # SHIFTキーが押されているかどうかをチェック
+        if key_lst[pg.K_LSHIFT]:
+            current_speed = self.boost_speed  # 高速化
+        else:
+            current_speed = self.speed  # 通常速度
         for k, mv in __class__.delta.items():
             if key_lst[k]:
-                self.rect.move_ip(+self.speed*mv[0], +self.speed*mv[1])
+                self.rect.move_ip(+current_speed*mv[0], +current_speed*mv[1])
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
         if check_bound(self.rect) != (True, True):
@@ -145,14 +151,15 @@ class Beam(pg.sprite.Sprite):
     """
     ビームに関するクラス
     """
-    def __init__(self, bird: Bird):
+    def __init__(self, bird: Bird, angle: float):
         """
         ビーム画像Surfaceを生成する
         引数 bird：ビームを放つこうかとん
+        引数 angle：ビームの放射角度
         """
         super().__init__()
         self.vx, self.vy = bird.get_direction()
-        angle = math.degrees(math.atan2(-self.vy, self.vx))
+        angle += math.degrees(math.atan2(-self.vy, self.vx))
         self.image = pg.transform.rotozoom(pg.image.load(f"ex04/fig/beam.png"), angle, 2.0)
         self.vx = math.cos(math.radians(angle))
         self.vy = -math.sin(math.radians(angle))
@@ -169,6 +176,31 @@ class Beam(pg.sprite.Sprite):
         self.rect.move_ip(+self.speed*self.vx, +self.speed*self.vy)
         if check_bound(self.rect) != (True, True):
             self.kill()
+
+
+class NeoBeam:
+    """
+    弾幕に関するクラス
+    """
+    def __init__(self, bird: Bird, num: int):
+        """
+        引数:
+            bird (Bird): ビームを放つこうかとん
+            num (int): ビームの本数
+        """
+        self.beams = self.gen_beams(bird, num)
+
+    def gen_beams(self, bird: Bird, num: int):
+        """
+        角度を変えたビームをnum本生成する
+        """
+        beams = []
+        for i in range(num):
+            angle = -50 + i * (101 / (num - 1))
+            beam = Beam(bird, angle)
+            beams.append(beam)
+        return beams
+
 
 
 class Explosion(pg.sprite.Sprite):
@@ -326,6 +358,12 @@ def main():
                         if score.score >= 50 and len(shields) == 0:  # スコアが50以上かつ防御壁が存在しない
                             shields.add(Shield(bird, 400))  # 防御壁を作成
                             score.score_up(-50)  # スコアを50減らす
+
+                    if key_lst[pg.K_LSHIFT]:  # 左Shiftキーが押されているかチェック
+                        neobeam = NeoBeam(bird, 5)  # 5本のビームを生成
+                        beams.add(*neobeam.beams)  # ここでビームを追加
+                    else:
+                        beams.add(Beam(bird, angle=0))  # ビームを生成
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる

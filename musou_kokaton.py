@@ -149,6 +149,7 @@ class Beam(pg.sprite.Sprite):
         """
         ビーム画像Surfaceを生成する
         引数 bird：ビームを放つこうかとん
+        引数 angle：ビームの放射角度
         """
         super().__init__()
         self.vx, self.vy = bird.get_direction()
@@ -172,10 +173,21 @@ class Beam(pg.sprite.Sprite):
 
 
 class NeoBeam:
+    """
+    弾幕に関するクラス
+    """
     def __init__(self, bird: Bird, num: int):
+        """
+        引数:
+            bird (Bird): ビームを放つこうかとん
+            num (int): ビームの本数
+        """
         self.beams = self.gen_beams(bird, num)
 
     def gen_beams(self, bird: Bird, num: int):
+        """
+        角度を変えたビームをnum本生成する
+        """
         beams = []
         for i in range(num):
             angle = -50 + i * (101 / (num - 1))

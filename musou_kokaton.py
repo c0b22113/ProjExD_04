@@ -256,8 +256,8 @@ class Gravity(pg.sprite.Sprite):
         super().__init__()
         self.image = pg.Surface((2*size, 2*size))
         self.image.set_alpha(150)
-        pg.draw.circle(self.image, (0, 0, 0), (size, size), size)
-        self.image.set_colorkey((255, 255, 255))
+        pg.draw.circle(self.image, (1, 0, 0), (size, size), size)
+        self.image.set_colorkey((0, 0, 0))
         self.rect = self.image.get_rect()
         self.rect.center = bird.rect.center
         self.life = life
@@ -296,9 +296,9 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
-            if event.type == pg.KEYDOWN and event.key == pg.K_TAB and score.score >= 0:
+            if event.type == pg.KEYDOWN and event.key == pg.K_TAB and score.score >= 50:
                 gravitys.add(Gravity(bird, 200, 500))
-                score.score -= 0
+                score.score -= 50
 
         screen.blit(bg_img, [0, 0])
 

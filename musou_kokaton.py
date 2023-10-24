@@ -285,7 +285,7 @@ def main():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     if key_lst[pg.K_LSHIFT]:  # 左Shiftキーが押されているかチェック
-                        neobeam = NeoBeam(bird, 10)  # 10本のビームを生成
+                        neobeam = NeoBeam(bird, 5)  # 5本のビームを生成
                         beams.add(*neobeam.beams)  # ここでビームを追加
                     else:
                         beams.add(Beam(bird, angle=0))  # ビームを生成

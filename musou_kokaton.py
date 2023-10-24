@@ -2,7 +2,6 @@ import math
 import random
 import sys
 import time
-
 import pygame as pg
 
 
@@ -280,7 +279,7 @@ class Score:
         self.image = self.font.render(f"Score: {self.score}", 0, self.color)
         screen.blit(self.image, self.rect)
 
-        
+
 class NeoGravity(pg.sprite.Sprite):
     def __init__(self, life:int):
         super().__init__()
@@ -290,7 +289,7 @@ class NeoGravity(pg.sprite.Sprite):
         pg.draw.rect(self.image, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
         self.rect = self.image.get_rect()
 
-        
+
 class Gravity(pg.sprite.Sprite):
     """
     tabキーを押すと重力球が発動する
@@ -304,7 +303,6 @@ class Gravity(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = bird.rect.center
         self.life = life
-        
 
     def update(self):
         """
@@ -313,8 +311,6 @@ class Gravity(pg.sprite.Sprite):
         self.life -= 1
         if self.life < 0:
             self.kill()
-
-
 
 
 class Shield(pg.sprite.Sprite):
@@ -388,7 +384,7 @@ def main():
             if event.type == pg.QUIT:
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                beams.add(Beam(bird))
+                beams.add(Beam(bird, angle = 0))
 
             if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and score.score > 200:
                 score.score -= 200
@@ -400,7 +396,7 @@ def main():
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
-                    beams.add(Beam(bird))
+                    beams.add(Beam(bird, angle=0))
                 if event.key == pg.K_CAPSLOCK:
                     vx, vy = bird.get_direction()
                     if not (vx != 0 and vy != 0):  # 斜めでない場合のみシールドを生成
@@ -408,11 +404,11 @@ def main():
                             shields.add(Shield(bird, 400))  # 防御壁を作成
                             score.score_up(-50)  # スコアを50減らす
 
-                    if key_lst[pg.K_LSHIFT]:  # 左Shiftキーが押されているかチェック
-                        neobeam = NeoBeam(bird, 5)  # 5本のビームを生成
-                        beams.add(*neobeam.beams)  # ここでビームを追加
-                    else:
-                        beams.add(Beam(bird, angle=0))  # ビームを生成
+                if key_lst[pg.K_LSHIFT]:  # 左Shiftキーが押されているかチェック
+                    neobeam = NeoBeam(bird, 5)  # 5本のビームを生成
+                    beams.add(*neobeam.beams)  # ここでビームを追加
+                else:
+                    beams.add(Beam(bird, angle=0))  # ビームを生成
 
         screen.blit(bg_img, [0, 0])
 
@@ -436,7 +432,7 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, neos, True, False).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.score_up(1)  # 1点アップ
-        
+
         for emy in pg.sprite.groupcollide(emys, neos, True, False).keys():
             exps.add(Explosion(emy, 100))  # 爆発エフェクト
             score.score_up(10)  # 10点アップ
@@ -445,7 +441,7 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, gravitys, True, False).keys():
             exps.add(Explosion(bomb, 100))
             score.score_up(1)
-            
+
         for shield in pg.sprite.groupcollide(shields, bombs, False, True).keys():
             exps.add(Explosion(shield, 50))  # 爆発エフェクト
             score.score_up(1)  # 1点アップ

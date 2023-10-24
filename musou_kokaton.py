@@ -70,7 +70,8 @@ class Bird(pg.sprite.Sprite):
         self.image = self.imgs[self.dire]
         self.rect = self.image.get_rect()
         self.rect.center = xy
-        self.speed = 10
+        self.speed = 10  # デフォルトの移動速度
+        self.boost_speed = 20  # 高速化時の移動速度
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -88,9 +89,14 @@ class Bird(pg.sprite.Sprite):
         引数2 screen：画面Surface
         """
         sum_mv = [0, 0]
+        # SHIFTキーが押されているかどうかをチェック
+        if key_lst[pg.K_LSHIFT]:
+            current_speed = self.boost_speed  # 高速化
+        else:
+            current_speed = self.speed  # 通常速度
         for k, mv in __class__.delta.items():
             if key_lst[k]:
-                self.rect.move_ip(+self.speed*mv[0], +self.speed*mv[1])
+                self.rect.move_ip(+current_speed*mv[0], +current_speed*mv[1])
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
         if check_bound(self.rect) != (True, True):
@@ -101,10 +107,10 @@ class Bird(pg.sprite.Sprite):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
         screen.blit(self.image, self.rect)
-    
+
     def get_direction(self) -> tuple[int, int]:
         return self.dire
-    
+
 
 class Bomb(pg.sprite.Sprite):
     """
@@ -204,7 +210,7 @@ class Enemy(pg.sprite.Sprite):
     敵機に関するクラス
     """
     imgs = [pg.image.load(f"ex04/fig/alien{i}.png") for i in range(1, 4)]
-    
+
     def __init__(self):
         super().__init__()
         self.image = random.choice(__class__.imgs)

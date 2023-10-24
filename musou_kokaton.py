@@ -101,10 +101,10 @@ class Bird(pg.sprite.Sprite):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
         screen.blit(self.image, self.rect)
-    
+
     def get_direction(self) -> tuple[int, int]:
         return self.dire
-    
+
 
 class Bomb(pg.sprite.Sprite):
     """
@@ -126,7 +126,7 @@ class Bomb(pg.sprite.Sprite):
         self.image.set_colorkey((0, 0, 0))
         self.rect = self.image.get_rect()
         # 爆弾を投下するemyから見た攻撃対象のbirdの方向を計算
-        self.vx, self.vy = calc_orientation(emy.rect, bird.rect)  
+        self.vx, self.vy = calc_orientation(emy.rect, bird.rect)
         self.rect.centerx = emy.rect.centerx
         self.rect.centery = emy.rect.centery+emy.rect.height/2
         self.speed = 6
@@ -204,7 +204,7 @@ class Enemy(pg.sprite.Sprite):
     敵機に関するクラス
     """
     imgs = [pg.image.load(f"ex04/fig/alien{i}.png") for i in range(1, 4)]
-    
+
     def __init__(self):
         super().__init__()
         self.image = random.choice(__class__.imgs)
@@ -249,6 +249,46 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+class Shield(pg.sprite.Sprite):
+    def __init__(self, bird: Bird, life: int):
+        super().__init__()
+        self.vx, self.vy = bird.get_direction()
+
+        # 斜め方向の場合はシールドを生成しない
+        if self.vx != 0 and self.vy != 0:
+            return
+
+        # こうかとんの方向から角度を計算
+        angle = math.degrees(math.atan2(-self.vy, self.vx))
+
+        # シールドの初期形状
+        self.image = pg.Surface((20, bird.rect.height * 2))
+        self.image.fill((0, 0, 0))
+
+        # シールドを角度に応じて回転
+        self.image = pg.transform.rotate(self.image, angle)
+
+        self.rect = self.image.get_rect()
+
+        # シールドの生成位置を決定
+        if self.vy < 0:  # 上方向（右上または左上）
+            self.rect.centerx = bird.rect.centerx
+            self.rect.centery = bird.rect.centery - bird.rect.height / 2
+        elif self.vy > 0:  # 下方向（右下または左下）
+            self.rect.centerx = bird.rect.centerx
+            self.rect.centery = bird.rect.centery + bird.rect.height / 2
+        else:  # 水平方向（右または左）
+            self.rect.centerx = bird.rect.centerx + bird.rect.width * self.vx / 2
+            self.rect.centery = bird.rect.centery
+
+        self.life = life
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -260,6 +300,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    shields = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -268,8 +309,15 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return 0
-            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    beams.add(Beam(bird))
+                if event.key == pg.K_CAPSLOCK:
+                    vx, vy = bird.get_direction()
+                    if not (vx != 0 and vy != 0):  # 斜めでない場合のみシールドを生成
+                        if score.score >= 50 and len(shields) == 0:  # スコアが50以上かつ防御壁が存在しない
+                            shields.add(Shield(bird, 400))  # 防御壁を作成
+                            score.score_up(-50)  # スコアを50減らす
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -289,6 +337,10 @@ def main():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.score_up(1)  # 1点アップ
 
+        for shield in pg.sprite.groupcollide(shields, bombs, False, True).keys():
+            exps.add(Explosion(shield, 50))  # 爆発エフェクト
+            score.score_up(1)  # 1点アップ
+
         if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
             bird.change_img(8, screen) # こうかとん悲しみエフェクト
             score.update(screen)
@@ -306,6 +358,8 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        shields.update()
+        shields.draw(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)

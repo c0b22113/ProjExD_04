@@ -383,33 +383,28 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return 0
-            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                beams.add(Beam(bird, angle = 0))
-
-            if event.type == pg.KEYDOWN and event.key == pg.K_RETURN and score.score > 200:
-                score.score -= 200
-                neos.add(NeoGravity(400))
-
-            if event.type == pg.KEYDOWN and event.key == pg.K_TAB and score.score >= 50:
-                gravitys.add(Gravity(bird, 200, 500))
-                score.score -= 50
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     beams.add(Beam(bird, angle=0))
+                if event.key == pg.K_RETURN and score.score >= 200:
+                    score.score -= 200
+                    neos.add(NeoGravity(400))
+                if event.key == pg.K_TAB and score.score >= 50:
+                    gravitys.add(Gravity(bird, 200, 500))
+                    score.score -= 50
                 if event.key == pg.K_CAPSLOCK:
                     vx, vy = bird.get_direction()
                     if not (vx != 0 and vy != 0):  # 斜めでない場合のみシールドを生成
                         if score.score >= 50 and len(shields) == 0:  # スコアが50以上かつ防御壁が存在しない
                             shields.add(Shield(bird, 400))  # 防御壁を作成
                             score.score_up(-50)  # スコアを50減らす
-
-                if key_lst[pg.K_LSHIFT]:  # 左Shiftキーが押されているかチェック
-                    neobeam = NeoBeam(bird, 5)  # 5本のビームを生成
-                    beams.add(*neobeam.beams)  # ここでビームを追加
-                else:
-                    beams.add(Beam(bird, angle=0))  # ビームを生成
-
+                if event.key == pg.K_SPACE:
+                    if key_lst[pg.K_LSHIFT]:
+                        neobeam = NeoBeam(bird, 5)
+                        beams.add(*neobeam.beams)
+                    else:
+                        beams.add(Beam(bird, angle=0))
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる

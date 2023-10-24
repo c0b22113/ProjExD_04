@@ -396,7 +396,7 @@ def main():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     beams.add(Beam(bird, angle=0))
-                if event.key == pg.K_RETURN and score.score >= 0:
+                if event.key == pg.K_RETURN and score.score >= 200:
                     score.score -= 200
                     neos.add(NeoGravity(400))
                 if event.key == pg.K_TAB and score.score >= 50:
